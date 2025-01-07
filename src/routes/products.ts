@@ -4,29 +4,67 @@ import { PrismaClient } from "@prisma/client";
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Add Original Product
-router.post("/original", async (req, res) => {
-  const { productCode, price } = req.body;
+// Generate random product data function
+function generateRandomProducts(count: number) {
+  const products: { productCode: string; price: number }[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const productCode = Math.random()
+      .toString(36)
+      .substring(2, 8)
+      .toUpperCase(); // Random 6-character alphanumeric
+    const price = parseFloat((Math.random() * 100).toFixed(2)); // Random price between 0 and 100
+    products.push({ productCode, price });
+  }
+  return products;
+}
+
+// Add 50 random products Original Products with
+router.post("/populate-original", async (req, res) => {
   try {
-    const product = await prisma.originalProduct.create({
-      data: { productCode, price },
+    const randomProducts = generateRandomProducts(50);
+    const createdProducts = await prisma.originalProduct.createMany({
+      data: randomProducts,
     });
-    res.json(product);
+    res.status(201).json({
+      message:
+        "Successfully populated Original Products table with 50 products.",
+      count: createdProducts.count,
+    });
   } catch (err) {
-    res.status(500).json({ error: "Error creating product" });
+    res
+      .status(500)
+      .json({ error: "Error populating Original Products table." });
   }
 });
 
-// Add Modified Product
+// Add Modified Products by keeping the code, but adjusting the price as 'price + VAT (21%)'
 router.post("/modified", async (req, res) => {
-  const { productCode, price } = req.body;
   try {
-    const product = await prisma.modifiedProduct.create({
-      data: { productCode, price },
+    const originalProducts = await prisma.originalProduct.findMany();
+
+    const modifiedProducts = originalProducts.map((product) => {
+      // Applying 21% VAT
+      const priceWithVat = parseFloat((product.price * 1.21).toFixed(2));
+      return {
+        productCode: product.productCode,
+        price: priceWithVat,
+      };
     });
-    res.json(product);
+
+    const createdModifiedProducts = await prisma.modifiedProduct.createMany({
+      data: modifiedProducts,
+    });
+
+    res.status(201).json({
+      message: `Successfully synced ${createdModifiedProducts.count} products to Modified Products.`,
+      count: createdModifiedProducts.count,
+    });
   } catch (err) {
-    res.status(500).json({ error: "Error creating product" });
+    console.error(err);
+    res
+      .status(500)
+      .json({ error: "Error syncing products to Modified Products." });
   }
 });
 
