@@ -1,4 +1,5 @@
-Keto Bakery NodeJS užduotis
+Keto Bakery NodeJS Task
+This project provides an API to manage **Original Products** and **Modified Products** tables, allowing you to populate, sync, and manage products with price adjustments (21% VAT).
 
 ## Technologies Used
 - Node.js
