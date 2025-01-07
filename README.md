@@ -1,5 +1,5 @@
-<h1 align="center">Keto Bakery NodeJS Task</h1<
-<p align="center">This project provides an API to manage **Original Products** and **Modified Products** tables, allowing you to populate, sync, and manage products with price adjustments (21% VAT).</p>
+<h1 align="center">Keto Bakery NodeJS Task</h1>
+<p align="center">This project provides an API to manage Original Products and Modified Products tables, allowing you to populate, sync, and manage products with price adjustments (21% VAT).</p>
 
 ## Technologies Used
 - Node.js
