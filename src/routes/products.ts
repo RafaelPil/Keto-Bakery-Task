@@ -39,19 +39,29 @@ router.post("/populate-original", async (req, res) => {
 });
 
 // Add Modified Products by keeping the code, but adjusting the price as 'price + VAT (21%)'
-router.post("/modified", async (req, res) => {
-  try {
-    const originalProducts = await prisma.originalProduct.findMany();
+router.post("/sync-to-modified", async (req, res) => {
+  // Get minPrice from query parameter
+  const minPrice = parseFloat(req.query.minPrice as string) || 0;
 
+  try {
+    const originalProducts = await prisma.originalProduct.findMany({
+      where: {
+        price: {
+          gte: minPrice, // Filter products with price greater than or equal to minPrice
+        },
+      },
+    });
+
+    // Create the Modified Products with updated 'prices + VAT (21%)'
     const modifiedProducts = originalProducts.map((product) => {
-      // Applying 21% VAT
-      const priceWithVat = parseFloat((product.price * 1.21).toFixed(2));
+      const priceWithVat = parseFloat((product.price * 1.21).toFixed(2)); // Applying 21% VAT
       return {
         productCode: product.productCode,
         price: priceWithVat,
       };
     });
 
+    // Insert the Modified Products into the table
     const createdModifiedProducts = await prisma.modifiedProduct.createMany({
       data: modifiedProducts,
     });
