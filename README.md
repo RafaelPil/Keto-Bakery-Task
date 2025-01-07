@@ -24,5 +24,5 @@ npm run dev
 
 ## API Endpoints:
 - Populate Products: POST /populate-original
-- Sync Products: POST /sync-to-modified?minPrice=<minPrice>
+- Sync Products: POST /sync-to-modified?minPrice=`minPrice`
 - View Products: GET /original or GET /modified
