@@ -1,5 +1,6 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { error } from "console";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -20,7 +21,7 @@ function generateRandomProducts(count: number) {
 }
 
 // Add 50 random products Original Products with
-router.post("/populate-original", async (req, res) => {
+router.post("/populate-original", async (req: Request, res: Response) => {
   try {
     const randomProducts = generateRandomProducts(50);
     const createdProducts = await prisma.originalProduct.createMany({
@@ -41,7 +42,7 @@ router.post("/populate-original", async (req, res) => {
 // Add Modified Products by keeping the code, but adjusting the price as 'price + VAT (21%)'
 // sync endpoint should have a parameter that specifies minimum price of the products to sync, 0 being all
 // If any price is modified of a product in Original Products table and trigger sync, the price re-calculates and updates in Modified Products table
-router.post("/sync-to-modified", async (req, res) => {
+router.post("/sync-to-modified", async (req: Request, res: Response) => {
   const minPrice = parseFloat(req.query.minPrice as string) || 0; // Get minPrice from query parameter
 
   try {
@@ -52,6 +53,13 @@ router.post("/sync-to-modified", async (req, res) => {
         },
       },
     });
+
+    // Check if there are no products or if the array is empty
+    if (originalProducts.length === 0) {
+      return res.status(404).json({
+        message: `No products found matching the price criteria.`,
+      });
+    }
 
     // Process each original product
     for (const product of originalProducts) {
@@ -92,20 +100,30 @@ router.post("/sync-to-modified", async (req, res) => {
 });
 
 // Get all Original Products
-router.get("/original", async (req, res) => {
+router.get("/original", async (req: Request, res: Response) => {
   try {
     const products = await prisma.originalProduct.findMany();
-    res.json(products);
+
+    if (products.length === 0) {
+      res.status(200).json({ message: "No products found" });
+    } else {
+      res.json(products);
+    }
   } catch (err) {
     res.status(500).json({ error: "Error fetching products" });
   }
 });
 
 // Get all Modified Products
-router.get("/modified", async (req, res) => {
+router.get("/modified", async (req: Request, res: Response) => {
   try {
     const products = await prisma.modifiedProduct.findMany();
-    res.json(products);
+
+    if (products.length === 0) {
+      res.status(200).json({ message: "No products found" });
+    } else {
+      res.json(products);
+    }
   } catch (err) {
     res.status(500).json({ error: "Error fetching products" });
   }
