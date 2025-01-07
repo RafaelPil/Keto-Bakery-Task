@@ -1,7 +1,6 @@
 import express, { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 
-
 const router = express.Router();
 const prisma = new PrismaClient();
 
@@ -81,19 +80,24 @@ router.post("/sync-to-modified", async (req: Request, res: Response) => {
       }
     }
 
+    // Validation for minPrice
     if (minPrice < 0) {
       return res.status(400).json({
         message: "Invalid minPrice value. It must be a positive number.",
       });
-    } else if (originalProducts.length === 0) {
+    }
+
+    // Check if any products were found
+    if (originalProducts.length === 0) {
       return res.status(404).json({
         message: `No products found matching the price criteria.`,
       });
-    } else {
-      res.status(201).json({
-        message: `Successfully synced and updated prices for modified products.`,
-      });
     }
+
+    // If everything is good, return a success response
+    return res.status(201).json({
+      message: `Successfully synced and updated prices for modified products.`,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({
