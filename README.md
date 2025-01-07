@@ -3,7 +3,7 @@ Keto Bakery NodeJS užduotis
 ## Technologies Used
 - Node.js
 - Express.js
-- Prisma ORM
+- PrismaORM
 
 ## Setup
 Clone the repository:
