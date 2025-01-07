@@ -39,9 +39,10 @@ router.post("/populate-original", async (req, res) => {
 });
 
 // Add Modified Products by keeping the code, but adjusting the price as 'price + VAT (21%)'
+// sync endpoint should have a parameter that specifies minimum price of the products to sync, 0 being all
+// If any price is modified of a product in Original Products table and trigger sync, the price re-calculates and updates in Modified Products table
 router.post("/sync-to-modified", async (req, res) => {
-  // Get minPrice from query parameter
-  const minPrice = parseFloat(req.query.minPrice as string) || 0;
+  const minPrice = parseFloat(req.query.minPrice as string) || 0; // Get minPrice from query parameter
 
   try {
     const originalProducts = await prisma.originalProduct.findMany({
@@ -52,29 +53,41 @@ router.post("/sync-to-modified", async (req, res) => {
       },
     });
 
-    // Create the Modified Products with updated 'prices + VAT (21%)'
-    const modifiedProducts = originalProducts.map((product) => {
-      const priceWithVat = parseFloat((product.price * 1.21).toFixed(2)); // Applying 21% VAT
-      return {
-        productCode: product.productCode,
-        price: priceWithVat,
-      };
-    });
+    // Process each original product
+    for (const product of originalProducts) {
+      // Applying 21% VAT to the price
+      const priceWithVat = parseFloat((product.price * 1.21).toFixed(2));
 
-    // Insert the Modified Products into the table
-    const createdModifiedProducts = await prisma.modifiedProduct.createMany({
-      data: modifiedProducts,
-    });
+      // Check if the product already exists in Modified Products
+      const existingModifiedProduct = await prisma.modifiedProduct.findUnique({
+        where: { id: product.id, productCode: product.productCode },
+      });
+
+      if (existingModifiedProduct) {
+        // If it exists, update the price with the new price
+        await prisma.modifiedProduct.update({
+          where: { id: product.id, productCode: product.productCode },
+          data: { price: priceWithVat },
+        });
+      } else {
+        // If it doesn't exist, create a new record in Modified Products
+        await prisma.modifiedProduct.create({
+          data: {
+            productCode: product.productCode,
+            price: priceWithVat,
+          },
+        });
+      }
+    }
 
     res.status(201).json({
-      message: `Successfully synced ${createdModifiedProducts.count} products to Modified Products.`,
-      count: createdModifiedProducts.count,
+      message: `Successfully synced and updated prices for modified products.`,
     });
   } catch (err) {
     console.error(err);
-    res
-      .status(500)
-      .json({ error: "Error syncing products to Modified Products." });
+    res.status(500).json({
+      error: "Error syncing and updating products to Modified Products.",
+    });
   }
 });
 
