@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { error } from "console";
+
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -54,13 +54,6 @@ router.post("/sync-to-modified", async (req: Request, res: Response) => {
       },
     });
 
-    // Check if there are no products or if the array is empty
-    if (originalProducts.length === 0) {
-      return res.status(404).json({
-        message: `No products found matching the price criteria.`,
-      });
-    }
-
     // Process each original product
     for (const product of originalProducts) {
       // Applying 21% VAT to the price
@@ -88,9 +81,19 @@ router.post("/sync-to-modified", async (req: Request, res: Response) => {
       }
     }
 
-    res.status(201).json({
-      message: `Successfully synced and updated prices for modified products.`,
-    });
+    if (minPrice < 0) {
+      return res.status(400).json({
+        message: "Invalid minPrice value. It must be a positive number.",
+      });
+    } else if (originalProducts.length === 0) {
+      return res.status(404).json({
+        message: `No products found matching the price criteria.`,
+      });
+    } else {
+      res.status(201).json({
+        message: `Successfully synced and updated prices for modified products.`,
+      });
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({

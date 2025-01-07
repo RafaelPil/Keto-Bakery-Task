@@ -1,5 +1,5 @@
 import express from "express";
-import productRoutes from "./routes/products.ts";
+import productRoutes from "./routes/products";
 
 const PORT = 3000;
 
