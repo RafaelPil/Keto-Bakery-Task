@@ -82,22 +82,23 @@ router.post("/sync-to-modified", async (req: Request, res: Response) => {
 
     // Validation for minPrice
     if (minPrice < 0) {
-      return res.status(400).json({
+      res.status(400).json({
         message: "Invalid minPrice value. It must be a positive number.",
       });
     }
 
     // Check if any products were found
     if (originalProducts.length === 0) {
-      return res.status(404).json({
+      res.status(404).json({
         message: `No products found matching the price criteria.`,
       });
     }
 
     // If everything is good, return a success response
-    return res.status(201).json({
+    res.status(201).json({
       message: `Successfully synced and updated prices for modified products.`,
     });
+    return;
   } catch (err) {
     console.error(err);
     res.status(500).json({
