@@ -60,13 +60,13 @@ router.post("/sync-to-modified", async (req: Request, res: Response) => {
 
       // Check if the product already exists in Modified Products
       const existingModifiedProduct = await prisma.modifiedProduct.findUnique({
-        where: { id: product.id, productCode: product.productCode },
+        where: { productCode: product.productCode },
       });
 
       if (existingModifiedProduct) {
         // If it exists, update the price with the new price
         await prisma.modifiedProduct.update({
-          where: { id: product.id, productCode: product.productCode },
+          where: { productCode: product.productCode },
           data: { price: priceWithVat },
         });
       } else {
