@@ -23,7 +23,7 @@ Run the server:
 npm run dev
 ```
 
-## Manage Tables with Prisma Studio
+Manage Tables with Prisma Studio
 ```bash
 npx prisma studio
 ```
