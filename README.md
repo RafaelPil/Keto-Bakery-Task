@@ -23,6 +23,11 @@ Run the server:
 npm run dev
 ```
 
+## Manage Tables with Prisma Studio
+```bash
+npx prisma studio
+```
+
 ## API Endpoints:
 - Populate Products: POST /populate-original
 - Sync Products: POST /sync-to-modified?minPrice=`minPrice`
